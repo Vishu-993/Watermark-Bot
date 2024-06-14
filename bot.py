@@ -173,7 +173,7 @@ async def VidWatermarkAdder(bot, cmd):
 		await cmd.reply_text("Sorry, Currently I am busy with another Task!\n\nTry Again After Sometime!")
 		return
 	preset = Config.PRESET
-	editable = await cmd.reply_text("Downloading Video ...", parse_mode="Markdown")
+	editable = await cmd.reply_text("Downloading Video ...", parse_mode=enums.ParseMode.HTML)
 	with open(status, "w") as f:
 		statusMsg = {
 			'chat_id': cmd.from_user.id,
@@ -308,8 +308,8 @@ async def VidWatermarkAdder(bot, cmd):
 				download_link = data_f["result"]["url"]
 				filename = output_vid.split("/")[-1].replace("_"," ")
 				text_edit = f"File Uploaded to Streamtape!\n\n**File Name:** `{filename}`\n**Size:** `{humanbytes(file_size)}`\n**Link:** `{download_link}`"
-				await editable.edit(text_edit, parse_mode="Markdown", disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Open Link", url=download_link)]]))
-				await logs_msg.edit("Successfully Uploaded File to Streamtape!\n\nI am Free Now!", parse_mode="Markdown", disable_web_page_preview=True)
+				await editable.edit(text_edit, parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Open Link", url=download_link)]]))
+				await logs_msg.edit("Successfully Uploaded File to Streamtape!\n\nI am Free Now!", parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
 		except Exception as e:
 			print(f"Error: {e}")
 			await editable.edit("Sorry, Something went wrong!\n\nCan't Upload to Streamtape. You can report at [Support Group](https://t.me/linux_repo).")
@@ -396,7 +396,7 @@ async def button(bot, cmd: CallbackQuery):
 				if user.status == "kicked":
 					await cmd.message.edit(
 						text="Sorry Sir, You are Banned to use me. Contact my [Support Group](https://t.me/DevsZone).",
-						parse_mode="markdown",
+						parse_mode=enums.ParseMode.HTML,
 						disable_web_page_preview=True
 					)
 					return
@@ -471,7 +471,7 @@ async def button(bot, cmd: CallbackQuery):
 					disable_web_page_preview=True
 				)
 				return
-		await bot.send_message(chat_id=Config.LOG_CHANNEL, text=f"#SETTINGS_SET: [{cmd.from_user.first_name}](tg://user?id={cmd.from_user.id}) Changed Settings!\n\n**User ID:** #id{cmd.from_user.id}\n**Data:** `{cb_data}`", parse_mode="Markdown", disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
+		await bot.send_message(chat_id=Config.LOG_CHANNEL, text=f"#SETTINGS_SET: [{cmd.from_user.first_name}](tg://user?id={cmd.from_user.id}) Changed Settings!\n\n**User ID:** #id{cmd.from_user.id}\n**Data:** `{cb_data}`", parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
 		new_position = cb_data.split("_", 1)[1]
 		if cb_data.startswith("position_"):
 			await db.set_position(cmd.from_user.id, new_position)
