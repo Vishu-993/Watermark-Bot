@@ -191,7 +191,7 @@ async def VidWatermarkAdder(bot, cmd):
         logs_msg = await bot.send_message(
             chat_id=Config.LOG_CHANNEL,
             text=f"Download Started!\n\n{user_info}",
-            reply_to_message_id=forwarded_video.message_id,  # Corrected attribute
+            reply_to_message_id=forwarded_video.id,  # Corrected attribute
             disable_web_page_preview=True,
             parse_mode=enums.ParseMode.HTML,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]])
