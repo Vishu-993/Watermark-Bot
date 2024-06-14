@@ -23,7 +23,7 @@ from hachoir.parser import createParser
 from PIL import Image
 from core.ffmpeg import vidmark
 from core.clean import delete_all, delete_trash
-from pyrogram import Client, filters
+from pyrogram import Client, filters, enums
 from configs import Config
 from core.handlers.main_db_handler import db
 from core.display_progress import progress_for_pyrogram, humanbytes
@@ -115,7 +115,7 @@ async def SettingsBot(bot, cmd):
 	await cmd.reply_text(
 		text="Here you can set your Watermark Settings:",
 		disable_web_page_preview=True,
-		parse_mode="Markdown",
+		parse_mode=enums.ParseMode.HTML,
 		reply_markup=InlineKeyboardMarkup(
 			[
 				[InlineKeyboardButton(f"Watermark Position - {position_tag}", callback_data="lol")],
@@ -188,7 +188,7 @@ async def VidWatermarkAdder(bot, cmd):
 	## --- Done --- ##
 	try:
 		forwarded_video = await cmd.forward(Config.LOG_CHANNEL)
-		logs_msg = await bot.send_message(chat_id=Config.LOG_CHANNEL, text=f"Download Started!\n\n{user_info}", reply_to_message_id=forwarded_video.message_id, disable_web_page_preview=True, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
+		logs_msg = await bot.send_message(chat_id=Config.LOG_CHANNEL, text=f"Download Started!\n\n{user_info}", reply_to_message_id=forwarded_video.message_id, disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
 		await asyncio.sleep(5)
 		c_time = time.time()
 		the_media = await bot.download_media(
@@ -382,7 +382,7 @@ async def sts(_, m):
 	if int(m.from_user.id) == Config.OWNER_ID:
 		total_users = await db.total_users_count()
 		msg_text += f"\n\n**Total Users in DB:** `{total_users}`"
-	await m.reply_text(text=msg_text, parse_mode="Markdown", quote=True)
+	await m.reply_text(text=msg_text, parse_mode=enums.ParseMode.HTML, quote=True)
 
 
 @AHBot.on_callback_query()
@@ -413,19 +413,19 @@ async def button(bot, cmd: CallbackQuery):
 							]
 						]
 					),
-					parse_mode="markdown"
+					parse_mode=enums.ParseMode.HTML
 				)
 				return
 			except Exception:
 				await cmd.message.edit(
 					text="Something went Wrong. Contact my [Support Group](https://t.me/DevsZone).",
-					parse_mode="markdown",
+					parse_mode=enums.ParseMode.HTML,
 					disable_web_page_preview=True
 				)
 				return
 		await cmd.message.edit(
 			text=Config.USAGE_WATERMARK_ADDER,
-			parse_mode="Markdown",
+			parse_mode=enums.ParseMode.HTML,
 			reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Developer", url="https://t.me/AbirHasan2005"), InlineKeyboardButton("Support Group", url="https://t.me/DevsZone")], [InlineKeyboardButton("Bots Channel", url="https://t.me/Discovery_Updates")]]),
 			disable_web_page_preview=True
 		)
@@ -444,7 +444,7 @@ async def button(bot, cmd: CallbackQuery):
 				if user.status == "kicked":
 					await cmd.message.edit(
 						text="Sorry Sir, You are Banned to use me. Contact my [Support Group](https://t.me/DevsZone).",
-						parse_mode="markdown",
+						parse_mode=enums.ParseMode.HTML,
 						disable_web_page_preview=True
 					)
 					return
@@ -461,13 +461,13 @@ async def button(bot, cmd: CallbackQuery):
 							]
 						]
 					),
-					parse_mode="markdown"
+					parse_mode=enums.ParseMode.HTML
 				)
 				return
 			except Exception:
 				await cmd.message.edit(
 					text="Something went Wrong. Contact my [Support Group](https://t.me/DevsZone).",
-					parse_mode="markdown",
+					parse_mode=enums.ParseMode.HTML,
 					disable_web_page_preview=True
 				)
 				return
@@ -516,7 +516,7 @@ async def button(bot, cmd: CallbackQuery):
 			await cmd.message.edit(
 				text="Here you can set your Watermark Settings:",
 				disable_web_page_preview=True,
-				parse_mode="Markdown",
+				parse_mode=enums.ParseMode.HTML,
 				reply_markup=InlineKeyboardMarkup(
 					[
 						[InlineKeyboardButton(f"Watermark Position - {position_tag}", callback_data="lol")],
