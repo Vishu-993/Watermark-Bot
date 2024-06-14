@@ -132,88 +132,95 @@ async def SettingsBot(bot, cmd):
 
 @AHBot.on_message((filters.document | filters.video | filters.photo) & filters.private)
 async def VidWatermarkAdder(bot, cmd):
-	if not await db.is_user_exist(cmd.from_user.id):
-		await db.add_user(cmd.from_user.id)
-		await bot.send_message(
-			Config.LOG_CHANNEL,
-			f"#NEW_USER: \n\nNew User [{cmd.from_user.first_name}](tg://user?id={cmd.from_user.id}) started @{Config.BOT_USERNAME} !!"
-		)
-	if Config.UPDATES_CHANNEL:
-		fsub = await handle_force_subscribe(bot, cmd)
-		if fsub == 400:
-			return
-	## --- Noobie Process --- ##
-	if cmd.photo or (cmd.document and cmd.document.mime_type.startswith("image/")):
-		editable = await cmd.reply_text("Downloading Image ...")
-		watermark_path = Config.DOWN_PATH + "/" + str(cmd.from_user.id) + "/thumb.jpg"
-		await asyncio.sleep(5)
-		c_time = time.time()
-		await bot.download_media(
-			message=cmd,
-			file_name=watermark_path,
-		)
-		await editable.delete()
-		await cmd.reply_text("This Saved as Next Video Watermark!\n\nNow Send any Video to start adding Watermark to the Video!")
-		return
-	else:
-		pass
-	working_dir = Config.DOWN_PATH + "/WatermarkAdder/"
-	if not os.path.exists(working_dir):
-		os.makedirs(working_dir)
-	watermark_path = Config.DOWN_PATH + "/" + str(cmd.from_user.id) + "/thumb.jpg"
-	if not os.path.exists(watermark_path):
-		await cmd.reply_text("You Didn't Set Any Watermark!\n\nSend any JPG or PNG Picture ...")
-		return
-	file_type = cmd.video or cmd.document
-	if not file_type.mime_type.startswith("video/"):
-		await cmd.reply_text("This is not a Video!")
-		return
-	status = Config.DOWN_PATH + "/WatermarkAdder/status.json"
-	if os.path.exists(status):
-		await cmd.reply_text("Sorry, Currently I am busy with another Task!\n\nTry Again After Sometime!")
-		return
-	preset = Config.PRESET
-	ms = await cmd.reply_text("Downloading Video ...", parse_mode=enums.ParseMode.HTML)
-	with open(status, "w") as f:
-		statusMsg = {
-			'chat_id': cmd.from_user.id,
-			'message': ms.id
-		}
-		json.dump(statusMsg, f, indent=2)
-	dl_loc = Config.DOWN_PATH + "/WatermarkAdder/" + str(cmd.from_user.id) + "/"
-	if not os.path.isdir(dl_loc):
-		os.makedirs(dl_loc)
-	the_media = None
-	user_info = f"**UserID:** #id{cmd.from_user.id}\n**Name:** [{cmd.from_user.first_name}](tg://user?id={cmd.from_user.id})"
-	## --- Done --- ##
-	try:
-		forwarded_video = await cmd.forward(Config.LOG_CHANNEL)
-		logs_msg = await bot.send_message(chat_id=Config.LOG_CHANNEL, text=f"Download Started!\n\n{user_info}", reply_to_message_id=forwarded_video.message.id, disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
-		await asyncio.sleep(5)
-		c_time = time.time()
-		the_media = await bot.download_media(
-			message=cmd,
-			file_name=dl_loc,
-			progress=progress_for_pyrogram,
-			progress_args=(
-				"Downloading Sir ...",
-				ms,
-				logs_msg,
-				c_time
-			)
-		)
-		if the_media is None:
-			await delete_trash(status)
-			await delete_trash(the_media)
-			print(f"Download Failed")
-			await ms.edit("Unable to Download The Video!")
-			return
-	except Exception as err:
-		await delete_trash(status)
-		await delete_trash(the_media)
-		print(f"Download Failed: {err}")
-		await ms.edit("Unable to Download The Video!")
-		return
+    if not await db.is_user_exist(cmd.from_user.id):
+        await db.add_user(cmd.from_user.id)
+        await bot.send_message(
+            Config.LOG_CHANNEL,
+            f"#NEW_USER: \n\nNew User [{cmd.from_user.first_name}](tg://user?id={cmd.from_user.id}) started @{Config.BOT_USERNAME} !!"
+        )
+    if Config.UPDATES_CHANNEL:
+        fsub = await handle_force_subscribe(bot, cmd)
+        if fsub == 400:
+            return
+    ## --- Noobie Process --- ##
+    if cmd.photo or (cmd.document and cmd.document.mime_type.startswith("image/")):
+        editable = await cmd.reply_text("Downloading Image ...")
+        watermark_path = Config.DOWN_PATH + "/" + str(cmd.from_user.id) + "/thumb.jpg"
+        await asyncio.sleep(5)
+        c_time = time.time()
+        await bot.download_media(
+            message=cmd,
+            file_name=watermark_path,
+        )
+        await editable.delete()
+        await cmd.reply_text("This Saved as Next Video Watermark!\n\nNow Send any Video to start adding Watermark to the Video!")
+        return
+    else:
+        pass
+    working_dir = Config.DOWN_PATH + "/WatermarkAdder/"
+    if not os.path.exists(working_dir):
+        os.makedirs(working_dir)
+    watermark_path = Config.DOWN_PATH + "/" + str(cmd.from_user.id) + "/thumb.jpg"
+    if not os.path.exists(watermark_path):
+        await cmd.reply_text("You Didn't Set Any Watermark!\n\nSend any JPG or PNG Picture ...")
+        return
+    file_type = cmd.video or cmd.document
+    if not file_type.mime_type.startswith("video/"):
+        await cmd.reply_text("This is not a Video!")
+        return
+    status = Config.DOWN_PATH + "/WatermarkAdder/status.json"
+    if os.path.exists(status):
+        await cmd.reply_text("Sorry, Currently I am busy with another Task!\n\nTry Again After Sometime!")
+        return
+    preset = Config.PRESET
+    ms = await cmd.reply_text("Downloading Video ...", parse_mode=enums.ParseMode.HTML)
+    with open(status, "w") as f:
+        statusMsg = {
+            'chat_id': cmd.from_user.id,
+            'message': ms.id
+        }
+        json.dump(statusMsg, f, indent=2)
+    dl_loc = Config.DOWN_PATH + "/WatermarkAdder/" + str(cmd.from_user.id) + "/"
+    if not os.path.isdir(dl_loc):
+        os.makedirs(dl_loc)
+    the_media = None
+    user_info = f"**UserID:** #id{cmd.from_user.id}\n**Name:** [{cmd.from_user.first_name}](tg://user?id={cmd.from_user.id})"
+    ## --- Done --- ##
+    try:
+        forwarded_video = await cmd.forward(Config.LOG_CHANNEL)
+        logs_msg = await bot.send_message(
+            chat_id=Config.LOG_CHANNEL,
+            text=f"Download Started!\n\n{user_info}",
+            reply_to_message_id=forwarded_video.message_id,  # Corrected attribute
+            disable_web_page_preview=True,
+            parse_mode=enums.ParseMode.HTML,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]])
+        )
+        await asyncio.sleep(5)
+        c_time = time.time()
+        the_media = await bot.download_media(
+            message=cmd,
+            file_name=dl_loc,
+            progress=progress_for_pyrogram,
+            progress_args=(
+                "Downloading Sir ...",
+                ms,
+                logs_msg,
+                c_time
+            )
+        )
+        if the_media is None:
+            await delete_trash(status)
+            await delete_trash(the_media)
+            print(f"Download Failed")
+            await ms.edit("Unable to Download The Video!")
+            return
+    except Exception as err:
+        await delete_trash(status)
+        await delete_trash(the_media)
+        print(f"Download Failed: {err}")
+        await ms.edit(f"Unable to Download The Video: {err}")
+        return
 	watermark_position = await db.get_position(cmd.from_user.id)
 	if watermark_position == "5:main_h-overlay_h":
 		position_tag = "Bottom Left"
