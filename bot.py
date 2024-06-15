@@ -146,7 +146,7 @@ async def VidWatermarkAdder(bot, cmd):
     if cmd.photo or (cmd.document and cmd.document.mime_type.startswith("image/")):
         editable = await cmd.reply_text("Downloading Image ...")
         watermark_path = Config.DOWN_PATH + "/" + str(cmd.from_user.id) + "/thumb.jpg"
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
         c_time = time.time()
         await bot.download_media(
             message=cmd,
@@ -196,7 +196,7 @@ async def VidWatermarkAdder(bot, cmd):
             parse_mode=enums.ParseMode.HTML,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]])
         )
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)
         c_time = time.time()
         the_media = await bot.download_media(
             message=cmd,
@@ -389,7 +389,7 @@ async def sts(_, m):
 		msg_text = "I am Free Now!\nSend me any video to add Watermark."
 	if int(m.from_user.id) == Config.OWNER_ID:
 		total_users = await db.total_users_count()
-		msg_text += f"\n\n**Total Users in DB:** `{total_users}`"
+		msg_text += f"\n\n<b>Total Users in DB:</b> <code>{total_users}</code>"
 	await m.reply_text(text=msg_text, parse_mode=enums.ParseMode.HTML, quote=True)
 
 
