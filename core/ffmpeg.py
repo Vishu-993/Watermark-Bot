@@ -19,6 +19,7 @@ import shlex
 import asyncio
 from configs import Config
 from typing import Tuple
+from pyrogram.types import Message
 from humanfriendly import format_timespan
 from core.display_progress import TimeFormatter
 from pyrogram.errors.exceptions.flood_420 import FloodWait
