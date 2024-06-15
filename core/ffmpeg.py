@@ -22,7 +22,7 @@ from typing import Tuple
 from pyrogram.types import Message
 from humanfriendly import format_timespan
 from core.display_progress import TimeFormatter
-from pyrogram.errors.exceptions.flood_420 import FloodWait
+from pyrogram.errors import FloodWait
 
 
 async def vidmark(the_media, message: Message, working_dir: str, watermark_path: str, output_vid: str, total_time: int, logs_msg: Message, status: str, mode: str, position: str, size: int) -> str:
@@ -43,6 +43,8 @@ async def vidmark(the_media, message: Message, working_dir: str, watermark_path:
         statusMsg['pid'] = process.pid
         f.seek(0)
         json.dump(statusMsg, f, indent=2)
+
+    previous_stats = None
 
     while True:
         await asyncio.sleep(5)
@@ -90,13 +92,16 @@ async def vidmark(the_media, message: Message, working_dir: str, watermark_path:
                 f'⏰️ **ETA:** `{ETA}`\n❇️ **Position:** `{position}`\n🔰 **PID:** `{process.pid}`\n🔄 **Duration:** `{format_timespan(total_time)}`\n\n'
                 f'{progress_str}\n'
             )
-            try:
-                await logs_msg.edit(text=stats)
-                await message.edit(text=stats)
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-            except Exception as e:
-                print(f"Error updating message: {e}")
+
+            if stats != previous_stats:
+                try:
+                    await logs_msg.edit(text=stats)
+                    await message.edit(text=stats)
+                    previous_stats = stats
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
+                except Exception as e:
+                    print(f"Error updating message: {e}")
 
     stdout, stderr = await process.communicate()
     e_response = stderr.decode().strip()
@@ -108,6 +113,7 @@ async def vidmark(the_media, message: Message, working_dir: str, watermark_path:
         return output_vid
     else:
         return None
+        
         
 
 async def take_screen_shot(video_file, output_directory, ttl):
