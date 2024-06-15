@@ -54,11 +54,6 @@ async def vidmark(
     user_id,
     public_log,
 ):
-    num_threads = (
-        (round(cpu_count() / 2) if round(cpu_count() / 2) == 0 else 1)
-        if Vars.LIMIT_CPU
-        else cpu_count()
-    )
     working_dir = f"{Vars.DOWN_PATH}/{user_id}/progress.txt"
     file_genertor_command = [
         "ffmpeg",
