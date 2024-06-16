@@ -9,27 +9,27 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 async def send_video_handler(bot, cmd, output_vid, video_thumbnail, duration, width, height, editable, logs_msg, file_size):
     c_time = time.time()
-    thumbnail_dir = os.path.dirname(video_thumbnail)
-    os.makedirs(thumbnail_dir, exist_ok=True)
-    sent_vid = await bot.send_video(
-        chat_id=cmd.chat.id,
-        video=output_vid,
-        caption=f"**File Name:** `{output_vid}`\n**Video Duration:** `{format_timespan(duration)}`\n**File Size:** `{humanbytes(file_size)}`\n\n{Config.CAPTION}",
-        thumb=video_thumbnail,
-        duration=duration,
-        width=width,
-        height=height,
-        reply_to_message_id=cmd.id,
-        supports_streaming=True,
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Developer", url="https://t.me/AbirHasan2005")],
-                                           [InlineKeyboardButton("Bots Channel", url="https://t.me/Discovery_Updates")],
-                                           [InlineKeyboardButton("Support Group", url="https://t.me/linux_repo")]]),
-        progress=progress_for_pyrogram,
-        progress_args=(
-            "Uploading, Wait Sir ...",
-            editable,
-            logs_msg,
-            c_time
+    try:
+        sent_vid = await bot.send_video(
+            chat_id=cmd.chat.id,
+            video=output_vid,
+            caption=f"**File Name:** `{os.path.basename(output_vid)}`\n**Video Size:** `{humanbytes(file_size)}`\n**Duration:** `{format_timespan(duration)}`",
+            thumb=video_thumbnail,
+            width=width,
+            height=height,
+            duration=duration,
+            supports_streaming=True,
+            progress=progress_for_pyrogram,
+            progress_args=(
+                "Uploading Sir ...",
+                editable,
+                logs_msg,
+                c_time
+            )
         )
-    )
+    except FloodWait as e:
+        await asyncio.sleep(e.x)
+        sent_vid = await send_video_handler(bot, cmd, output_vid, video_thumbnail, duration, width, height, editable, logs_msg, file_size)
+    except Exception as err:
+        raise err
     return sent_vid
