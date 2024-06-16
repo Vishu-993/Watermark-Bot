@@ -106,8 +106,10 @@ async def vidmark(the_media, message, working_dir, watermark_path, output_vid, t
                 print(f"Failed to update message: {e}")
 
     stdout, stderr = await process.communicate()
-    print("FFmpeg stdout:", stdout.decode())
-    print("FFmpeg stderr:", stderr.decode())
+    e_response = stderr.decode().strip()
+    t_response = stdout.decode().strip()
+    print(e_response)
+    print(t_response)
 
     if os.path.exists(output_vid):
         return output_vid
