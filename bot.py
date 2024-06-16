@@ -28,7 +28,6 @@ from configs import Config
 from core.handlers.main_db_handler import db
 from core.display_progress import progress_for_pyrogram, humanbytes
 from core.handlers.force_sub_handler import handle_force_subscribe
-from core.handlers.upload_video_handler import send_video_handler
 from core.handlers.broadcast_handlers import broadcast_handler
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors.exceptions.flood_420 import FloodWait
@@ -252,62 +251,25 @@ async def VidWatermarkAdder(bot, cmd):
         await logs_msg.edit(f"#ERROR: Unable to add Watermark!\n\n**Error:** `{err}`")
         await delete_all()
         return
+	    
     if output_vid is None:
         await ms.edit("Something went wrong!")
         await logs_msg.edit("#ERROR: Something went wrong!")
         await delete_all()
         return
+	    
     await ms.edit("Watermark Added Successfully!\n\nTrying to Upload ...")
     await logs_msg.edit("Watermark Added Successfully!\n\nTrying to Upload ...", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
-    width = 100
-    height = 100
-    duration = 0
-    metadata = extractMetadata(createParser(output_vid))
-    if metadata.has("duration"):
-        duration = metadata.get('duration').seconds
-    if metadata.has("width"):
-        width = metadata.get("width")
-    if metadata.has("height"):
-        height = metadata.get("height")
-    video_thumbnail = None
-    try:
-        video_thumbnail = os.path.join(Config.DOWN_PATH, "WatermarkAdder", str(cmd.from_user.id), f"{time.time()}.jpg")
-        ttl = random.randint(0, int(duration) - 1)
-        file_generator_command = [
-            "ffmpeg",
-            "-ss", str(ttl),
-            "-i", output_vid,
-            "-vframes", "1",
-            video_thumbnail
-        ]
-        process = await asyncio.create_subprocess_exec(
-            *file_generator_command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, stderr = await process.communicate()
-        e_response = stderr.decode().strip()
-        t_response = stdout.decode().strip()
-        print(e_response)
-        print(t_response)
-
-        Image.open(video_thumbnail).convert("RGB").save(video_thumbnail)
-        img = Image.open(video_thumbnail)
-        img.resize((width, height))
-        img.save(video_thumbnail, "JPEG")
-    except Exception as err:
-        print(f"Error: {err}")
-        video_thumbnail = None
-
+	
     file_size = os.path.getsize(output_vid)
     await asyncio.sleep(5)
 
     try:
-        sent_vid = await send_video_handler(bot, cmd, output_vid, video_thumbnail, duration, width, height, ms, logs_msg, file_size)
+        sent_vid = await send_video_handler(bot, cmd, output_vid, duration, ms, logs_msg, file_size)
     except FloodWait as e:
         await asyncio.sleep(e.x)
         await asyncio.sleep(5)
-        sent_vid = await send_video_handler(bot, cmd, output_vid, video_thumbnail, duration, width, height, ms, logs_msg, file_size)
+        sent_vid = await send_video_handler(bot, cmd, output_vid, duration, ms, logs_msg, file_size)
     except Exception as err:
         await logs_msg.edit(f"#ERROR: Unable to Upload Video!\n\n**Error:** `{err}`")
         await delete_all()
@@ -316,9 +278,21 @@ async def VidWatermarkAdder(bot, cmd):
     await delete_all()
     await ms.delete()
     forward_vid = await sent_vid.forward(Config.LOG_CHANNEL)
-    await logs_msg.delete()
-    await bot.send_message(chat_id=Config.LOG_CHANNEL, text=f"#WATERMARK_ADDED: Video Uploaded!\n\n{user_info}", reply_to_message_id=forward_vid.message_id, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
-	
+    await logs_msg.edit("Video uploaded successfully!")
+
+async def send_video_handler(bot, cmd, output_vid, duration, ms, logs_msg, file_size):
+    return await bot.send_video(
+        chat_id=cmd.chat.id,
+        video=output_vid,
+        caption=f"**File Name:** `{output_vid}`\n**File Size:** {humanbytes(file_size)}\n**Duration:** {format_timespan(duration)}\n\n**© @{Config.BOT_USERNAME}**",
+        progress=progress_for_pyrogram,
+        progress_args=(
+            "Uploading Video ...",
+            ms,
+            logs_msg,
+            time.time()
+        )
+    )
 
 @AHBot.on_message(filters.command("cancel") & filters.private)
 async def CancelWatermarkAdder(bot, cmd):
