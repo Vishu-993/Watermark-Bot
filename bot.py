@@ -26,6 +26,7 @@ from core.clean import delete_all, delete_trash
 from pyrogram import Client, filters, enums
 from configs import Config
 from core.handlers.main_db_handler import db
+from humanfriendly import format_timespan
 from core.display_progress import progress_for_pyrogram, humanbytes
 from core.handlers.force_sub_handler import handle_force_subscribe
 from core.handlers.broadcast_handlers import broadcast_handler
