@@ -13,7 +13,7 @@
 import os
 import math
 import json
-from re import findall
+import re
 import subprocess
 import time
 import shlex
