@@ -19,18 +19,40 @@ import time
 import subprocess
 import time
 import shlex
+from psutil import cpu_count
 from configs import Config
 from humanfriendly import format_timespan
 from core.display_progress import TimeFormatter
 from pyrogram.errors.exceptions.flood_420 import FloodWait
 
+num_threads = round(cpu_count() / 2) if round(cpu_count() / 2) > 0 else 1
+
 async def vidmark(the_media, message, working_dir, watermark_path, output_vid, total_time, logs_msg, status, mode, position, size):
     file_generator_command = [
-        "ffmpeg", "-hide_banner", "-loglevel", "quiet", "-progress", working_dir, "-i", the_media, "-i", watermark_path,
-        "-filter_complex", f"[1][0]scale2ref=w='iw*{size}/100':h='ow/mdar'[wm][vid];[vid][wm]overlay={position}",
-        "-c:v", "copy", "-preset", mode, "-crf", "0", "-c:a", "copy", output_vid
+        "ffmpeg",
+        "-hide_banner",
+        "-loglevel",
+        "quiet",
+        "-progress",
+        working_dir,
+        "-i",
+        the_media,
+        "-i",
+        watermark_path,
+        "-filter_complex",
+        f"[1][0]scale2ref=w='iw*{size}/100':h='ow/mdar'[wm][vid];[vid][wm]overlay={position}",
+        "-c:v",
+        "h264",
+        "-threads",
+        str(num_threads),
+        "-preset",
+        mode,
+        "-tune",
+        "film",
+        "-c:a",
+        "copy",
+        output_vid,
     ]
-
     COMPRESSION_START_TIME = time.time()
     process = await asyncio.create_subprocess_exec(
         *file_generator_command,
