@@ -271,21 +271,17 @@ async def VidWatermarkAdder(bot, cmd):
         height = metadata.get("height")
     video_thumbnail = None
     try:
-        video_thumbnail = Config.DOWN_PATH + "/WatermarkAdder/" + str(cmd.from_user.id) + "/" + str(time.time()) + ".jpg"
-        os.makedirs(video_thumbnail, exist_ok=True)
+        video_thumbnail = os.path.join(Config.DOWN_PATH, "WatermarkAdder", str(cmd.from_user.id), f"{time.time()}.jpg")
         ttl = random.randint(0, int(duration) - 1)
-        file_genertor_command = [
+        file_generator_command = [
             "ffmpeg",
-            "-ss",
-            str(ttl),
-            "-i",
-            output_vid,
-            "-vframes",
-            "1",
+            "-ss", str(ttl),
+            "-i", output_vid,
+            "-vframes", "1",
             video_thumbnail
         ]
         process = await asyncio.create_subprocess_exec(
-            *file_genertor_command,
+            *file_generator_command,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -294,57 +290,35 @@ async def VidWatermarkAdder(bot, cmd):
         t_response = stdout.decode().strip()
         print(e_response)
         print(t_response)
+
         Image.open(video_thumbnail).convert("RGB").save(video_thumbnail)
         img = Image.open(video_thumbnail)
         img.resize((width, height))
         img.save(video_thumbnail, "JPEG")
     except Exception as err:
         print(f"Error: {err}")
-    # --- Upload --- #
-    file_size = os.path.getsize(output_vid)
-    if (int(file_size) > 2097152000) and (Config.ALLOW_UPLOAD_TO_STREAMTAPE is True) and (Config.STREAMTAPE_API_USERNAME != "NoNeed") and (Config.STREAMTAPE_API_PASS != "NoNeed"):
-        await ms.edit(f"Sorry Sir,\n\nFile Size Become {humanbytes(file_size)} !!\nI can't Upload to Telegram!\n\nSo Now Uploading to Streamtape ...")
-        try:
-            async with aiohttp.ClientSession() as session:
-                Main_API = "https://api.streamtape.com/file/ul?login={}&key={}"
-                hit_api = await session.get(Main_API.format(Config.STREAMTAPE_API_USERNAME, Config.STREAMTAPE_API_PASS))
-                json_data = await hit_api.json()
-                temp_api = json_data["result"]["url"]
-                files = {'file1': open(output_vid, 'rb')}
-                response = await session.post(temp_api, data=files)
-                data_f = await response.json(content_type=None)
-                download_link = data_f["result"]["url"]
-                filename = output_vid.split("/")[-1].replace("_"," ")
-                text_edit = f"File Uploaded to Streamtape!\n\n**File Name:** `{filename}`\n**Size:** `{humanbytes(file_size)}`\n**Link:** `{download_link}`"
-                await editable.edit(text_edit, parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Open Link", url=download_link)]]))
-                await logs_msg.edit("Successfully Uploaded File to Streamtape!\n\nI am Free Now!", parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
-        except Exception as e:
-            print(f"Error: {e}")
-            await ms.edit("Sorry, Something went wrong!\n\nCan't Upload to Streamtape. You can report at [Support Group](https://t.me/linux_repo).")
-            await logs_msg.edit(f"Got Error While Uploading to Streamtape!\n\nError: {e}")
-        await delete_all()
-        return
+        video_thumbnail = None
 
+    file_size = os.path.getsize(output_vid)
     await asyncio.sleep(5)
+
     try:
         sent_vid = await send_video_handler(bot, cmd, output_vid, video_thumbnail, duration, width, height, ms, logs_msg, file_size)
     except FloodWait as e:
-        print(f"Got FloodWait of {e.x}s ...")
         await asyncio.sleep(e.x)
         await asyncio.sleep(5)
         sent_vid = await send_video_handler(bot, cmd, output_vid, video_thumbnail, duration, width, height, ms, logs_msg, file_size)
     except Exception as err:
-        print(f"Unable to Upload Video: {err}")
         await logs_msg.edit(f"#ERROR: Unable to Upload Video!\n\n**Error:** `{err}`")
         await delete_all()
         return
+
     await delete_all()
     await ms.delete()
     forward_vid = await sent_vid.forward(Config.LOG_CHANNEL)
     await logs_msg.delete()
     await bot.send_message(chat_id=Config.LOG_CHANNEL, text=f"#WATERMARK_ADDED: Video Uploaded!\n\n{user_info}", reply_to_message_id=forward_vid.message_id, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Ban User", callback_data=f"ban_{cmd.from_user.id}")]]))
 	
-
 
 @AHBot.on_message(filters.command("cancel") & filters.private)
 async def CancelWatermarkAdder(bot, cmd):
