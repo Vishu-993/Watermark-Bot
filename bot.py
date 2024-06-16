@@ -272,6 +272,7 @@ async def VidWatermarkAdder(bot, cmd):
     video_thumbnail = None
     try:
         video_thumbnail = Config.DOWN_PATH + "/WatermarkAdder/" + str(cmd.from_user.id) + "/" + str(time.time()) + ".jpg"
+        os.makedirs(video_thumbnail, exist_ok=True)
         ttl = random.randint(0, int(duration) - 1)
         file_genertor_command = [
             "ffmpeg",
