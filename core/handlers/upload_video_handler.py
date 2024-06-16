@@ -9,6 +9,8 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 async def send_video_handler(bot, cmd, output_vid, video_thumbnail, duration, width, height, editable, logs_msg, file_size):
     c_time = time.time()
+    thumbnail_dir = os.path.dirname(video_thumbnail)
+    os.makedirs(thumbnail_dir, exist_ok=True)
     sent_vid = await bot.send_video(
         chat_id=cmd.chat.id,
         video=output_vid,
