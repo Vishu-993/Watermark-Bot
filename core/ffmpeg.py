@@ -81,7 +81,6 @@ async def vidmark(the_media, message, working_dir, watermark_path, output_vid, t
                     f'⏰️ **ETA:** `{ETA}`\n❇️ **Position:** `{position}`\n🔰 **PID:** `{process.pid}`\n🔄 **Duration: `{format_timespan(total_time)}`**\n\n' \
                     f'{progress_str}\n'
             try:
-                await logs_msg.edit(text=stats)
                 await message.edit(text=stats)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
